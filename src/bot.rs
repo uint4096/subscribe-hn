@@ -1,11 +1,20 @@
 use teloxide::{prelude::*, utils::command::BotCommands};
 
-pub struct SubscriptionBot;
+pub struct SubscriptionBot(pub Bot);
 
 impl SubscriptionBot {
+    fn create() -> Bot {
+        Bot::from_env()
+    }
+
     pub async fn init() -> () {
-        let bot = Bot::from_env();
+        let bot = SubscriptionBot::create();
         Command::repl(bot, answer).await;
+        println!("Repl initialized!");
+    }
+
+    pub fn new() -> Self {
+        Self(SubscriptionBot::create())
     }
 }
 
