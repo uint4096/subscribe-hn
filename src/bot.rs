@@ -34,29 +34,12 @@ enum Command {
 async fn answer(bot: Bot, msg: Message, cmd: Command) -> ResponseResult<()> {
     match cmd {
         Command::Help => {
-            bot.send_message(
-                msg.chat.id,
-                 Command::descriptions().to_string()
-            ).await?
+            bot.send_message(msg.chat.id, Command::descriptions().to_string())
+                .await?
         }
-        Command::Subscribe(topic) => {
-            bot.send_message(
-                msg.chat.id,
-                 topic,
-            ).await?
-        }
-        Command::Unsubscribe(topic) => {
-            bot.send_message(
-                msg.chat.id,
-                 topic,
-            ).await?
-        },
-        Command::List => {
-            bot.send_message(
-                msg.chat.id,
-                String::from("List"),
-            ).await?
-        }
+        Command::Subscribe(topic) => bot.send_message(msg.chat.id, topic).await?,
+        Command::Unsubscribe(topic) => bot.send_message(msg.chat.id, topic).await?,
+        Command::List => bot.send_message(msg.chat.id, String::from("List")).await?,
     };
 
     Ok(())

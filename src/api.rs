@@ -17,7 +17,7 @@ impl<'a> HN {
     const NEW_STORIES: &'a str = "newstories.json";
     const ITEM: &'a str = "item";
 
-    async fn get_story_ids() -> Vec<u16> {
+    pub async fn get_story_ids() -> Vec<u16> {
         if let Ok(response) = reqwest::get(format!("{}/{}", HN::BASE_URL, HN::NEW_STORIES)).await {
             if let Ok(ids) = response.json::<Vec<u16>>().await {
                 return ids;
@@ -27,7 +27,7 @@ impl<'a> HN {
         panic!("Unable to fetch story ids!");
     }
 
-    async fn get_story(id: u16) -> News {
+    pub async fn get_story(id: u16) -> News {
         if let Ok(response) = reqwest::get(format!(
             "{}/{}/{}.json",
             HN::BASE_URL,
