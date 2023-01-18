@@ -1,6 +1,6 @@
 use std::{
     fs,
-    io::{BufRead, BufReader, Write},
+    io::{BufRead, BufReader, Write, Result},
     path::{Path, PathBuf},
     str::FromStr,
 };
@@ -14,10 +14,14 @@ where
     }
     fn get_store() -> PathBuf;
     fn update(&mut self, elem: &T) -> ();
+    fn delete(&mut self, _: &T) -> () {()}
+    fn overwrite(&mut self, _: U) -> Result<()> {Ok(())}
     fn fetch(&mut self) -> Option<U>;
 }
 
 pub struct ProcessedId(pub Option<u16>);
+
+#[derive(Clone)]
 pub struct Topics(pub Option<Vec<String>>);
 
 impl Store<'_, u16, u16> for ProcessedId {
@@ -61,10 +65,25 @@ impl Store<'_, String, Vec<String>> for Topics {
         Path::new(Topics::get_base_path()).join("topics")
     }
 
+    fn delete(&mut self, topic: &String) -> () {
+        if let Some(mut elems) = self.0.to_owned() {
+            elems.retain(|e| e != topic);
+            match self.overwrite(elems) {
+                Ok(_) => (),
+                Err(e) => panic!("Error while overwriting topics! Error: {e}")
+            }
+        };
+    }
+
+    fn overwrite(&mut self, topics: Vec<String>) -> Result<()> {
+        self.0 = Some(topics.clone());
+        fs::write(Topics::get_store(), topics.join("\n"))
+    } 
+
     fn update(&mut self, topic: &String) -> () {
         match fs::OpenOptions::new()
-            .append(true)
             .create(true)
+            .append(true)
             .open(Topics::get_store())
         {
             Ok(mut file) => {
@@ -105,12 +124,12 @@ impl Store<'_, String, Vec<String>> for Topics {
                         while let Some(line) = reader_lines.next() {
                             match line {
                                 Ok(line) => {
-                                    self.update(&line);
                                     lines.push(line);
                                 }
                                 Err(_) => continue,
                             }
                         }
+                        self.0 = Some(lines.clone());
                         Some(lines)
                     }
                     Err(_) => None,
