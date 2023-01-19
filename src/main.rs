@@ -12,9 +12,9 @@ use tokio::{spawn, sync::Mutex};
 
 #[tokio::main]
 async fn main() {
-    let id_store = ProcessedId(None);
+    let id_store = ProcessedId::new(None);
     let handle = spawn(async move {
-        let topics_store: Topics = Topics(None);
+        let topics_store: Topics = Topics::new(None);
         let bot = SubscriptionBot::new(topics_store);
         bot.init().await;
     });
@@ -28,7 +28,7 @@ async fn main() {
         }
     }
 
-    let topics_store: Arc<Mutex<Topics>> = Arc::new(Mutex::new(Topics(None)));
+    let topics_store: Arc<Mutex<Topics>> = Arc::new(Mutex::new(Topics::new(None)));
     let bot = Arc::new(SubscriptionBot::create());
     check_for_stories(id_store, topics_store, bot).await;
 }

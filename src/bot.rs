@@ -60,7 +60,7 @@ async fn command_handler(mut store: Topics, bot: Bot, _: Me, msg: Message, cmd: 
             bot.send_message(msg.chat.id, format!("Unsubscribed from {topic}")).await?
         },
         Command::List => {
-            match store.0 {
+            match store.fetch() {
                 Some(list) => bot.send_message(msg.chat.id, list.join("\n")).await?,
                 None => bot.send_message(msg.chat.id, format!("You haven't subscribed to anything")).await?,
             }

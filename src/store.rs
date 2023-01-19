@@ -10,8 +10,9 @@ where
     T: FromStr,
 {
     fn get_base_path() -> &'a str {
-        "~/.config/subscribe_hn"
+        "/home/abhishek/.config/subscribe_hn"
     }
+    fn new(elem: Option<U>) -> Self; 
     fn get_store() -> PathBuf;
     fn update(&mut self, elem: &T) -> ();
     fn delete(&mut self, _: &T) -> () {()}
@@ -19,23 +20,26 @@ where
     fn fetch(&mut self) -> Option<U>;
 }
 
-pub struct ProcessedId(pub Option<u16>);
+pub struct ProcessedId(Option<u16>);
 
 #[derive(Clone)]
-pub struct Topics(pub Option<Vec<String>>);
+pub struct Topics(Option<Vec<String>>);
 
 impl Store<'_, u16, u16> for ProcessedId {
     fn get_store() -> PathBuf {
         Path::new(ProcessedId::get_base_path()).join("last_processed_id")
     }
 
+    fn new(id: Option<u16>) -> Self {
+        let store_path = ProcessedId::get_base_path();
+        fs::create_dir_all(store_path).expect("Error while creating the store!");
+        ProcessedId(id)
+    }
+
     fn update(&mut self, id: &u16) -> () {
         self.0 = Some(*id);
         let id = id.to_string();
-        match fs::write(ProcessedId::get_store(), id) {
-            Ok(()) => (),
-            Err(e) => panic!("Error while writing id to disk! Error: {e}"),
-        }
+        fs::write(ProcessedId::get_store(), id).expect("Error while writing id to disk!")
     }
 
     fn fetch(&mut self) -> Option<u16> {
@@ -65,9 +69,15 @@ impl Store<'_, String, Vec<String>> for Topics {
         Path::new(Topics::get_base_path()).join("topics")
     }
 
+    fn new(topics: Option<Vec<String>>) -> Self {
+        let store_path = ProcessedId::get_base_path();
+        fs::create_dir_all(store_path).expect("Error while creating the store!");
+        Topics(topics)
+    }
+
     fn delete(&mut self, topic: &String) -> () {
-        if let Some(mut elems) = self.0.to_owned() {
-            elems.retain(|e| e != topic);
+        if let Some(mut elems) = self.fetch() {
+            elems.retain(|e| e != &topic.to_lowercase());
             match self.overwrite(elems) {
                 Ok(_) => (),
                 Err(e) => panic!("Error while overwriting topics! Error: {e}")
@@ -77,7 +87,7 @@ impl Store<'_, String, Vec<String>> for Topics {
 
     fn overwrite(&mut self, topics: Vec<String>) -> Result<()> {
         self.0 = Some(topics.clone());
-        fs::write(Topics::get_store(), topics.join("\n"))
+        fs::write(Topics::get_store(), format!("{}\n", topics.join("\n")))
     } 
 
     fn update(&mut self, topic: &String) -> () {
@@ -92,7 +102,7 @@ impl Store<'_, String, Vec<String>> for Topics {
 
                 match file.write(&(topic.as_bytes())) {
                     Ok(_) => {
-                        if let Some(mut topics) = self.0.to_owned() {
+                        if let Some(mut topics) = self.fetch() {
                             topics.push(topic);
                             self.0 = Some(topics);
                         } else {
@@ -129,6 +139,7 @@ impl Store<'_, String, Vec<String>> for Topics {
                                 Err(_) => continue,
                             }
                         }
+
                         self.0 = Some(lines.clone());
                         Some(lines)
                     }
