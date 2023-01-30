@@ -6,10 +6,10 @@ pub struct HN;
 #[derive(Deserialize)]
 pub struct News {
     pub title: String,
-    pub url: String,
-    pub dead: bool,
-    pub id: u16,
-    pub text: String,
+    pub url: Option<String>,
+    pub dead: Option<bool>,
+    pub id: u32,
+    pub text: Option<String>,
 }
 
 impl<'a> HN {
@@ -17,18 +17,20 @@ impl<'a> HN {
     const NEW_STORIES: &'a str = "newstories.json";
     const ITEM: &'a str = "item";
 
-    pub async fn get_story_ids() -> Vec<u16> {
-        if let Ok(response) = reqwest::get(format!("{}/{}", HN::BASE_URL, HN::NEW_STORIES)).await {
-            if let Ok(ids) = response.json::<Vec<u16>>().await {
-                return ids;
-            }
+    pub async fn get_story_ids() -> Vec<u32> {
+        match reqwest::get(format!("{}/{}", HN::BASE_URL, HN::NEW_STORIES)).await {
+            Ok(response) => {
+                match response.json::<Vec<u32>>().await {
+                    Ok(ids) => return ids,
+                    Err(e) => panic!("Error while converting ids to JSON! Error: {e}")
+                }
+            },
+            Err(e) => panic!("Unable to fetch story ids! Error: {e}")
         }
-
-        panic!("Unable to fetch story ids!");
     }
 
-    pub async fn get_story(id: u16) -> News {
-        if let Ok(response) = reqwest::get(format!(
+    pub async fn get_story(id: u32) -> News {
+        match reqwest::get(format!(
             "{}/{}/{}.json",
             HN::BASE_URL,
             HN::ITEM,
@@ -36,11 +38,13 @@ impl<'a> HN {
         ))
         .await
         {
-            if let Ok(news) = response.json::<News>().await {
-                return news;
-            }
+            Ok(response) => {
+                match response.json::<News>().await {
+                    Ok(news) => return news,
+                    Err(e) => panic!("Error while converting story to JSON! Error: {e}")
+                }
+            },
+            Err(e) => panic!("Unable to fetch story! Error: {e}")
         }
-
-        panic!("Unable to fetch story!");
     }
 }

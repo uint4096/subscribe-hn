@@ -20,29 +20,29 @@ where
     fn fetch(&mut self) -> Option<U>;
 }
 
-pub struct ProcessedId(Option<u16>);
+pub struct ProcessedId(Option<u32>);
 
 #[derive(Clone)]
 pub struct Topics(Option<Vec<String>>);
 
-impl Store<'_, u16, u16> for ProcessedId {
+impl Store<'_, u32, u32> for ProcessedId {
     fn get_store() -> PathBuf {
         Path::new(ProcessedId::get_base_path()).join("last_processed_id")
     }
 
-    fn new(id: Option<u16>) -> Self {
+    fn new(id: Option<u32>) -> Self {
         let store_path = ProcessedId::get_base_path();
         fs::create_dir_all(store_path).expect("Error while creating the store!");
         ProcessedId(id)
     }
 
-    fn update(&mut self, id: &u16) -> () {
+    fn update(&mut self, id: &u32) -> () {
         self.0 = Some(*id);
         let id = id.to_string();
         fs::write(ProcessedId::get_store(), id).expect("Error while writing id to disk!")
     }
 
-    fn fetch(&mut self) -> Option<u16> {
+    fn fetch(&mut self) -> Option<u32> {
         match self.0 {
             Some(id) => Some(id),
             None => {
@@ -52,7 +52,7 @@ impl Store<'_, u16, u16> for ProcessedId {
                 };
 
                 if let Some(content) = content {
-                    let id: u16 = content.trim().parse().unwrap_or(0);
+                    let id: u32 = content.trim().parse().unwrap_or(0);
                     if id > 0 {
                         return Some(id);
                     }
