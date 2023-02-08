@@ -19,13 +19,11 @@ impl<'a> HN {
 
     pub async fn get_story_ids() -> Vec<u32> {
         match reqwest::get(format!("{}/{}", HN::BASE_URL, HN::NEW_STORIES)).await {
-            Ok(response) => {
-                match response.json::<Vec<u32>>().await {
-                    Ok(ids) => return ids,
-                    Err(e) => panic!("Error while converting ids to JSON! Error: {e}")
-                }
+            Ok(response) => match response.json::<Vec<u32>>().await {
+                Ok(ids) => return ids,
+                Err(e) => panic!("Error while converting ids to JSON! Error: {e}"),
             },
-            Err(e) => panic!("Unable to fetch story ids! Error: {e}")
+            Err(e) => panic!("Unable to fetch story ids! Error: {e}"),
         }
     }
 
@@ -38,13 +36,11 @@ impl<'a> HN {
         ))
         .await
         {
-            Ok(response) => {
-                match response.json::<News>().await {
-                    Ok(news) => return news,
-                    Err(e) => panic!("Error while converting story to JSON! Error: {e}")
-                }
+            Ok(response) => match response.json::<News>().await {
+                Ok(news) => return news,
+                Err(e) => panic!("Error while converting story to JSON! Error: {e}"),
             },
-            Err(e) => panic!("Unable to fetch story! Error: {e}")
+            Err(e) => panic!("Unable to fetch story! Error: {e}"),
         }
     }
 }

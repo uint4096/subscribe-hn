@@ -1,6 +1,6 @@
 use std::{
     fs,
-    io::{BufRead, BufReader, Write, Result},
+    io::{BufRead, BufReader, Result, Write},
     path::{Path, PathBuf},
     str::FromStr,
 };
@@ -12,11 +12,15 @@ where
     fn get_base_path() -> &'a str {
         "/home/abhishek/.config/subscribe_hn"
     }
-    fn new(elem: Option<U>) -> Self; 
+    fn new(elem: Option<U>) -> Self;
     fn get_store() -> PathBuf;
     fn update(&mut self, elem: &T) -> ();
-    fn delete(&mut self, _: &T) -> () {()}
-    fn overwrite(&mut self, _: U) -> Result<()> {Ok(())}
+    fn delete(&mut self, _: &T) -> () {
+        ()
+    }
+    fn overwrite(&mut self, _: U) -> Result<()> {
+        Ok(())
+    }
     fn fetch(&mut self) -> Option<U>;
 }
 
@@ -80,7 +84,7 @@ impl Store<'_, String, Vec<String>> for Topics {
             elems.retain(|e| e != &topic.to_lowercase());
             match self.overwrite(elems) {
                 Ok(_) => (),
-                Err(e) => panic!("Error while overwriting topics! Error: {e}")
+                Err(e) => panic!("Error while overwriting topics! Error: {e}"),
             }
         };
     }
@@ -88,7 +92,7 @@ impl Store<'_, String, Vec<String>> for Topics {
     fn overwrite(&mut self, topics: Vec<String>) -> Result<()> {
         self.0 = Some(topics.clone());
         fs::write(Topics::get_store(), format!("{}\n", topics.join("\n")))
-    } 
+    }
 
     fn update(&mut self, topic: &String) -> () {
         match fs::OpenOptions::new()
