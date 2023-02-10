@@ -3,7 +3,7 @@ mod bot;
 mod store;
 use api::HN;
 use bot::SubscriptionBot;
-use std::sync::Arc;
+use std::{env, sync::Arc};
 use store::{ProcessedId, Store, Topics};
 use teloxide::{
     requests::Requester,
@@ -25,12 +25,21 @@ async fn main() {
         bot.init().await;
     });
 
+    let chat_id = match env::var("CHAT_ID") {
+        Ok(val) => val
+            .parse::<i64>()
+            .unwrap_or_else(|_| panic!("CHAT_ID must be a number!")),
+        Err(_) => {
+            panic!("No chat id specified! You must specify the CHAT_ID as an environment var.")
+        }
+    };
+
     let api_handle = spawn(async move {
         loop {
             println!("Fetching new stories.");
             let topics_store: Arc<Mutex<Topics>> = Arc::new(Mutex::new(Topics::new(None)));
             let bot = Arc::new(SubscriptionBot::create());
-            check_for_stories(&mut id_store, topics_store, bot).await;
+            check_for_stories(&mut id_store, topics_store, bot, chat_id).await;
 
             sleep(Duration::from_secs(60)).await;
         }
@@ -44,7 +53,12 @@ async fn main() {
     }
 }
 
-async fn check_for_stories(id_store: &mut ProcessedId, topics: Arc<Mutex<Topics>>, bot: Arc<Bot>) {
+async fn check_for_stories(
+    id_store: &mut ProcessedId,
+    topics: Arc<Mutex<Topics>>,
+    bot: Arc<Bot>,
+    chat_id: i64,
+) {
     let new_stories = HN::get_story_ids().await;
 
     if let Some(id) = id_store.fetch() {
@@ -79,7 +93,7 @@ async fn check_for_stories(id_store: &mut ProcessedId, topics: Arc<Mutex<Topics>
                         if let Some(url) = story.url {
                             let message = format!("{}\n{}", story.title, url);
                             match bot
-                                .send_message(Recipient::Id(ChatId(619356013)), message)
+                                .send_message(Recipient::Id(ChatId(chat_id)), message)
                                 .await
                             {
                                 Ok(_) => (),
