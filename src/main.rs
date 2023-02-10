@@ -10,7 +10,11 @@ use teloxide::{
     types::{ChatId, Recipient},
     Bot,
 };
-use tokio::{join, spawn, sync::Mutex, time::{sleep, Duration}};
+use tokio::{
+    join, spawn,
+    sync::Mutex,
+    time::{sleep, Duration},
+};
 
 #[tokio::main]
 async fn main() {
@@ -62,8 +66,15 @@ async fn check_for_stories(id_store: &mut ProcessedId, topics: Arc<Mutex<Topics>
                         story
                             .title
                             .to_lowercase()
-                            .split_ascii_whitespace()
+                            .split(|c| c == ' ' || c == '/' || c == '-')
                             .any(|word| word == topic)
+                            || if let Some(text) = &story.text {
+                                text.to_lowercase()
+                                    .split_ascii_whitespace()
+                                    .any(|word| word == topic)
+                            } else {
+                                false
+                            }
                     }) {
                         if let Some(url) = story.url {
                             let message = format!("{}\n{}", story.title, url);
