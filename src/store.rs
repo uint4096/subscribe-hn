@@ -26,9 +26,6 @@ where
 
 pub struct ProcessedId(Option<u32>);
 
-#[derive(Clone)]
-pub struct Topics(Option<Vec<String>>);
-
 impl Store<'_, u32, u32> for ProcessedId {
     fn get_store() -> PathBuf {
         Path::new(ProcessedId::get_base_path()).join("last_processed_id")
@@ -67,6 +64,9 @@ impl Store<'_, u32, u32> for ProcessedId {
         }
     }
 }
+
+#[derive(Clone)]
+pub struct Topics(Option<Vec<String>>);
 
 impl Store<'_, String, Vec<String>> for Topics {
     fn get_store() -> PathBuf {
@@ -149,6 +149,61 @@ impl Store<'_, String, Vec<String>> for Topics {
                     }
                     Err(_) => None,
                 }
+            }
+        }
+    }
+}
+
+pub struct SentStories;
+impl Store<'_, String, Vec<String>> for SentStories {
+    fn get_store() -> PathBuf {
+        Path::new(Topics::get_base_path()).join("sent_stories")
+    }
+
+    fn new(_: Option<Vec<String>>) -> Self {
+        let store_path = SentStories::get_base_path();
+        fs::create_dir_all(store_path).expect("Error while creating the store!");
+        SentStories
+    }
+
+    fn fetch(&mut self) -> Option<Vec<String>> {
+        match fs::File::open(SentStories::get_store()) {
+            Ok(file) => {
+                let reader = BufReader::new(file);
+                let mut reader_lines = reader.lines();
+                let mut lines: Vec<String> = vec![];
+
+                while let Some(line) = reader_lines.next() {
+                    match line {
+                        Ok(line) => {
+                            lines.push(line);
+                        }
+                        Err(_) => continue,
+                    }
+                }
+
+                Some(lines)
+            }
+            Err(_) => None,
+        }
+    }
+
+    fn update(&mut self, title: &String) -> () {
+        match fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(SentStories::get_store())
+        {
+            Ok(mut file) => {
+                let mut title = String::from(title);
+                title.push('\n');
+
+                if let Err(e) = file.write(&(title.as_bytes())) {
+                    panic!("Error while writing sent stories!. Error: {e}");
+                }
+            }
+            Err(e) => {
+                panic!("Error while opening file for writing!. Error: {e}")
             }
         }
     }

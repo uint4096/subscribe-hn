@@ -4,7 +4,7 @@ mod store;
 use api::HN;
 use bot::SubscriptionBot;
 use std::{env, sync::Arc};
-use store::{ProcessedId, Store, Topics};
+use store::{ProcessedId, Store, Topics, SentStories};
 use teloxide::{
     requests::Requester,
     types::{ChatId, Recipient},
@@ -39,7 +39,8 @@ async fn main() {
             println!("Fetching new stories.");
             let topics_store: Arc<Mutex<Topics>> = Arc::new(Mutex::new(Topics::new(None)));
             let bot = Arc::new(SubscriptionBot::create());
-            check_for_stories(&mut id_store, topics_store, bot, chat_id).await;
+            let sent_stories = Arc::new(Mutex::new(SentStories::new(None)));
+            check_for_stories(&mut id_store, sent_stories, topics_store, bot, chat_id).await;
 
             sleep(Duration::from_secs(60)).await;
         }
@@ -55,6 +56,7 @@ async fn main() {
 
 async fn check_for_stories(
     id_store: &mut ProcessedId,
+    sent_stories: Arc<Mutex<SentStories>>,
     topics: Arc<Mutex<Topics>>,
     bot: Arc<Bot>,
     chat_id: i64,
@@ -70,11 +72,13 @@ async fn check_for_stories(
             }
 
             let topics = topics.clone();
+            let sent_stories = sent_stories.clone();
             let bot = bot.clone();
 
             spawn(async move {
                 let story = HN::get_story(story_id).await;
                 let mut topics = topics.lock().await;
+                let mut sent_store = sent_stories.lock().await;
                 if let Some(topics) = topics.fetch() {
                     if topics.iter().any(|topic| {
                         story
@@ -90,15 +94,22 @@ async fn check_for_stories(
                                 false
                             }
                     }) {
+                        let sent_stories = match sent_store.fetch() {
+                            Some(stories) => stories,
+                            None => vec![]
+                        };
+
                         if let Some(url) = story.url {
-                            let message = format!("{}\n{}", story.title, url);
-                            match bot
-                                .send_message(Recipient::Id(ChatId(chat_id)), message)
-                                .await
-                            {
-                                Ok(_) => (),
-                                Err(e) => {
-                                    panic!("Failed to send message! Error: {e}")
+                            if !sent_stories.contains(&url) {
+                                 let message = format!("{}\n{}", story.title, url);
+                                match bot
+                                    .send_message(Recipient::Id(ChatId(chat_id)), message)
+                                    .await
+                                {
+                                    Ok(_) => { sent_store.update(&story.title) },
+                                    Err(e) => {
+                                        panic!("Failed to send message! Error: {e}")
+                                    }
                                 }
                             }
                         }
