@@ -14,6 +14,7 @@ use tokio::{
     join, spawn,
     sync::Mutex,
     time::{sleep, Duration},
+    task::JoinSet
 };
 
 #[tokio::main]
@@ -62,7 +63,7 @@ async fn check_for_stories(
     chat_id: i64,
 ) {
     let new_stories = HN::get_story_ids().await;
-
+    let mut set = JoinSet::new();
     if let Some(id) = id_store.fetch() {
         for story_id in &new_stories {
             let story_id = *story_id;
@@ -75,7 +76,7 @@ async fn check_for_stories(
             let sent_stories = sent_stories.clone();
             let bot = bot.clone();
 
-            spawn(async move {
+            set.spawn(async move {
                 let story = HN::get_story(story_id).await;
                 let mut topics = topics.lock().await;
                 let mut sent_store = sent_stories.lock().await;
@@ -119,7 +120,12 @@ async fn check_for_stories(
         }
     }
 
-    id_store.update(&new_stories[0]);
+    let mut counter = 0;
+    while let Some(_) = set.join_next().await {
+        counter += 1;
+        println!("Processed {counter} stories.");
+    }
 
+    id_store.update(&new_stories[0]);
     ()
 }
