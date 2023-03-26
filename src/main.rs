@@ -101,8 +101,8 @@ async fn check_for_stories(
                         };
 
                         if let Some(url) = story.url {
-                            if !sent_stories.contains(&url) {
-                                 let message = format!("{}\n{}", story.title, url);
+                            if !sent_stories.contains(&story.title) {
+                                let message = format!("{}\n{}", story.title, url);
                                 match bot
                                     .send_message(Recipient::Id(ChatId(chat_id)), message)
                                     .await
