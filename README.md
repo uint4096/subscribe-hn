@@ -42,8 +42,8 @@ The bot currently supports these commands:
 | Command                  | Description                                           |
 |--------------------------|-------------------------------------------------------|
 | `/help`                  | List all commands along with the command description. |
-| `/subscribe <topic>`   | Subscribe to a topic.                                 |
-| `/unsubscribe <topic>` | Unsubscribe from a topic                              |
+| `/subscribe <topic>`     | Subscribe to a topic.                                 |
+| `/unsubscribe <topic>`   | Unsubscribe from a topic                              |
 | `/list`                  | List all subscribed topics                            |
 
 

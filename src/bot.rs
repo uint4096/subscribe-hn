@@ -52,6 +52,22 @@ async fn command_handler(
     msg: Message,
     cmd: Command,
 ) -> ResponseResult<()> {
+    let chat_id = match std::env::var("CHAT_ID") {
+        Ok(id) => id
+            .parse::<i64>()
+            .unwrap_or_else(|_| panic!("CHAT_ID must be a number!")),
+        Err(_) => panic!("No CHAT_ID specified while running the bot!"),
+    };
+
+    if msg.chat.id != ChatId(chat_id) {
+        bot.send_message(
+            msg.chat.id,
+            format!("This bot wasn't configured to run for your chat id. See https://github.com/uint4096/subscribe-HN for more information.")
+        ).await?;
+
+        return Ok(());
+    }
+
     match cmd {
         Command::Help => {
             bot.send_message(msg.chat.id, Command::descriptions().to_string())

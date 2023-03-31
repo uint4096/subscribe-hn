@@ -4,7 +4,7 @@ mod store;
 use api::HN;
 use bot::SubscriptionBot;
 use std::{env, sync::Arc};
-use store::{ProcessedId, Store, Topics, SentStories};
+use store::{ProcessedId, SentStories, Store, Topics};
 use teloxide::{
     requests::Requester,
     types::{ChatId, Recipient},
@@ -13,8 +13,8 @@ use teloxide::{
 use tokio::{
     join, spawn,
     sync::Mutex,
+    task::JoinSet,
     time::{sleep, Duration},
-    task::JoinSet
 };
 
 #[tokio::main]
@@ -97,7 +97,7 @@ async fn check_for_stories(
                     }) {
                         let sent_stories = match sent_store.fetch() {
                             Some(stories) => stories,
-                            None => vec![]
+                            None => vec![],
                         };
 
                         if let Some(url) = story.url {
@@ -107,7 +107,7 @@ async fn check_for_stories(
                                     .send_message(Recipient::Id(ChatId(chat_id)), message)
                                     .await
                                 {
-                                    Ok(_) => { sent_store.update(&story.title) },
+                                    Ok(_) => sent_store.update(&story.title),
                                     Err(e) => {
                                         panic!("Failed to send message! Error: {e}")
                                     }
