@@ -101,13 +101,13 @@ async fn check_for_stories(
                         };
 
                         if let Some(url) = story.url {
-                            if !sent_stories.contains(&story.title) {
+                            if !sent_stories.contains(&story.title.to_lowercase()) {
                                 let message = format!("{}\n{}", story.title, url);
                                 match bot
                                     .send_message(Recipient::Id(ChatId(chat_id)), message)
                                     .await
                                 {
-                                    Ok(_) => sent_store.update(&story.title),
+                                    Ok(_) => sent_store.update(&story.title.to_lowercase()),
                                     Err(e) => {
                                         panic!("Failed to send message! Error: {e}")
                                     }
@@ -126,6 +126,6 @@ async fn check_for_stories(
         println!("Processed {counter} stories.");
     }
 
-    id_store.update(&new_stories[0]);
+    if new_stories.len() > 0  { id_store.update(&new_stories[0]) };
     ()
 }
