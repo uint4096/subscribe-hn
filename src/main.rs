@@ -77,39 +77,40 @@ async fn check_for_stories(
             let bot = bot.clone();
 
             set.spawn(async move {
-                let story = HN::get_story(story_id).await;
-                let mut topics = topics.lock().await;
-                let mut sent_store = sent_stories.lock().await;
-                if let Some(topics) = topics.fetch() {
-                    if topics.iter().any(|topic| {
-                        story
-                            .title
-                            .to_lowercase()
-                            .split(|c| c == ' ' || c == '/' || c == '-')
-                            .any(|word| word == topic)
-                            || if let Some(text) = &story.text {
-                                text.to_lowercase()
-                                    .split_ascii_whitespace()
-                                    .any(|word| word == topic)
-                            } else {
-                                false
-                            }
-                    }) {
-                        let sent_stories = match sent_store.fetch() {
-                            Some(stories) => stories,
-                            None => vec![],
-                        };
+                if let Some(story) = HN::get_story(story_id).await {
+                    let mut topics = topics.lock().await;
+                    let mut sent_store = sent_stories.lock().await;
+                    if let Some(topics) = topics.fetch() {
+                        if topics.iter().any(|topic| {
+                            story
+                                .title
+                                .to_lowercase()
+                                .split(|c| c == ' ' || c == '/' || c == '-')
+                                .any(|word| word == topic)
+                                || if let Some(text) = &story.text {
+                                    text.to_lowercase()
+                                        .split_ascii_whitespace()
+                                        .any(|word| word == topic)
+                                } else {
+                                    false
+                                }
+                        }) {
+                            let sent_stories = match sent_store.fetch() {
+                                Some(stories) => stories,
+                                None => vec![],
+                            };
 
-                        if let Some(url) = story.url {
-                            if !sent_stories.contains(&story.title.to_lowercase()) {
-                                let message = format!("{}\n{}", story.title, url);
-                                match bot
-                                    .send_message(Recipient::Id(ChatId(chat_id)), message)
-                                    .await
-                                {
-                                    Ok(_) => sent_store.update(&story.title.to_lowercase()),
-                                    Err(e) => {
-                                        panic!("Failed to send message! Error: {e}")
+                            if let Some(url) = story.url {
+                                if !sent_stories.contains(&story.title.to_lowercase()) {
+                                    let message = format!("{}\n{}", story.title, url);
+                                    match bot
+                                        .send_message(Recipient::Id(ChatId(chat_id)), message)
+                                        .await
+                                    {
+                                        Ok(_) => sent_store.update(&story.title.to_lowercase()),
+                                        Err(e) => {
+                                            panic!("Failed to send message! Error: {e}")
+                                        }
                                     }
                                 }
                             }

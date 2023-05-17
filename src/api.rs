@@ -30,7 +30,7 @@ impl<'a> HN {
         }
     }
 
-    pub async fn get_story(id: u32) -> News {
+    pub async fn get_story(id: u32) -> Option<News> {
         match reqwest::get(format!(
             "{}/{}/{}.json",
             HN::BASE_URL,
@@ -40,8 +40,11 @@ impl<'a> HN {
         .await
         {
             Ok(response) => match response.json::<News>().await {
-                Ok(news) => return news,
-                Err(e) => panic!("Error while converting story to JSON! Error: {e}"),
+                Ok(news) => return Some(news),
+                Err(e) => {
+                    println!("Failed to convert story to JSON! Skipping this story. Error: {e}");
+                    None
+                }
             },
             Err(e) => panic!("Unable to fetch story! Error: {e}"),
         }
