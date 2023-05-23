@@ -26,7 +26,10 @@ impl<'a> HN {
                     vec![]
                 }
             },
-            Err(e) => panic!("Unable to fetch story ids! Error: {e}"),
+            Err(e) => {
+                println!("Unable to fetch story ids. Error: {e}");
+                vec![]
+            },
         }
     }
 
