@@ -6,8 +6,8 @@ use bot::SubscriptionBot;
 use std::{env, sync::Arc};
 use store::{ProcessedId, SentStories, Store, Topics};
 use teloxide::{
-    requests::Requester,
-    types::{ChatId, Recipient},
+    requests::{Requester, RequesterExt},
+    types::{ChatId, Recipient, ParseMode},
     Bot,
 };
 use tokio::{
@@ -102,8 +102,10 @@ async fn check_for_stories(
 
                             if let Some(url) = story.url {
                                 if !sent_stories.contains(&story.title.to_lowercase()) {
-                                    let message = format!("{}\n{}", story.title, url);
+                                    let link = format!("https://news.ycombinator.com/item?id={}", story.id);
+                                    let message = format!("{}\n[Article]({})  [Post]({})", story.title, url, link);
                                     match bot
+                                        .parse_mode(ParseMode::MarkdownV2)
                                         .send_message(Recipient::Id(ChatId(chat_id)), message)
                                         .await
                                     {
