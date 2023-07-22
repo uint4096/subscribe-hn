@@ -28,7 +28,7 @@ jobs:
       - name: Push changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit-message: "[skip ci] | chore: version update"
+          commit_message: "[skip ci] | chore: version update"
 
       - id: version_out
         run: echo "package_version=$(cargo pkgid | cut -d '@' -f2)" >> $GITHUB_OUTPUT
@@ -39,7 +39,9 @@ jobs:
 
     steps:
       - name: echo version
-        run: echo ${{ needs.update-version.outputs.version }}
+        env: |
+          PACKAGE_VERSION: ${{ needs.update-version.outputs.version }} 
+        run: echo  "$PACKAGE_VERSION"
 
 
         
