@@ -33,7 +33,7 @@ jobs:
       - id: version_out
         run: echo "package_version=$(cargo pkgid | cut -d '@' -f2)" >> $GITHUB_OUTPUT
 
-  build image:
+  build-image:
     runs-on: ubuntu-latest
     needs: update-version
 
