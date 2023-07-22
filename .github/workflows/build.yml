@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     outputs:
-      version: ${{ steps.version_out.package_version }}
+      version: ${{ steps.version_out.outputs.package_version }}
 
     steps:
       - name: Checkout branch
@@ -31,7 +31,7 @@ jobs:
           commit_message: "[skip ci] | chore: version update"
 
       - id: version_out
-        run: echo "package_version=$(cargo pkgid | cut -d '@' -f2)" >> $GITHUB_OUTPUT
+        run: echo "package_version=$(cargo pkgid | cut -d '@' -f2)" >> "$GITHUB_OUTPUT"
 
   build-image:
     runs-on: ubuntu-latest
@@ -53,7 +53,7 @@ jobs:
           images: |
             subscribehn
           tags: |
-            type=semver,pattern={{version}},value="$PACKAGE_VERSION"
+            type=semver,pattern={{version}},value=$PACKAGE_VERSION
             type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Login to Docker Hub 
