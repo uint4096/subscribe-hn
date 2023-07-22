@@ -39,9 +39,9 @@ jobs:
 
     steps:
       - name: echo version
-        env: |
+        env:
           PACKAGE_VERSION: ${{ needs.update-version.outputs.version }} 
-        run: echo  "$PACKAGE_VERSION"
+        run: echo "$PACKAGE_VERSION"
 
 
         
