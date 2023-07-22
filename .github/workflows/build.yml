@@ -23,7 +23,7 @@ jobs:
       - name: Install cargo-bump and update version
         run: |
           cargo install cargo-bump
-          cargo-bump update
+          cargo bump
 
       - name: Push changes
         uses: stefanzweifel/git-auto-commit-action@v4
