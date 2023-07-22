@@ -1,0 +1,46 @@
+name: Build and Release
+
+on:
+  push:
+    branches: ['main', 'ci']
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+
+    outputs:
+      version: ${{ steps.version_out.package_version }}
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v3
+
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Install cargo-bump and update version
+        script: |
+          cargo install cargo-bump
+          cargo-bump update
+
+      - name: Push changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit-message: "[skip ci] | chore: version update"
+
+      - id: version_out
+        run: echo "package_version=$(cargo pkgid | cut -d '@' -f2)" >> $GITHUB_OUTPUT
+
+  build image:
+    runs-on: ubuntu-latest
+    needs: update-version
+
+    steps:
+      - name: echo version
+        run: echo ${{ needs.update-version.outputs.version }}
+
+
+        
+
