@@ -21,7 +21,7 @@ jobs:
           toolchain: stable
 
       - name: Install cargo-bump and update version
-        script: |
+        run: |
           cargo install cargo-bump
           cargo-bump update
 
