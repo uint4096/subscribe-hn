@@ -68,3 +68,30 @@ jobs:
           context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
+
+  create-release:
+    runs-on: ubuntu-latest
+    needs: update-version
+
+    steps:
+      - name: Checkout Branch
+        uses: actions/checkout@v3
+
+      - name: Build
+        id: build
+        env:
+          PACKAGE_VERSION: ${{ needs.update-version.outputs.version }}
+        uses: rust-build/rust-build.action@v1.4.3
+        with:
+          RUSTTARGET: x86_64-unknown-linux-musl
+          ARCHIVE_TYPES: tar.gz
+          ARCHIVE_NAME: subscribehn-${{ env.PACKAGE_VERSION }}.tar.gz 
+          UPLOAD_MODE: none
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: Binary
+          path: |
+            ${{ steps.build.outputs.BUILT_ARCHIVE }}
+            ${{ steps.build.outputs.BUILT_CHECKSUM }}
