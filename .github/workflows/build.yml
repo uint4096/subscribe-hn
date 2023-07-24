@@ -2,7 +2,7 @@ name: Build and Release
 
 on:
   push:
-    branches: ['main', 'ci']
+    branches: ['master']
 
 jobs:
   update-version:
@@ -24,6 +24,7 @@ jobs:
         run: |
           cargo install cargo-bump
           cargo bump
+          cargo build --release
 
       - name: Push changes
         uses: stefanzweifel/git-auto-commit-action@v4
