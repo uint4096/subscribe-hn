@@ -28,7 +28,8 @@ jobs:
       - name: Push changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: "[skip ci] | chore: version update"
+          file_pattern: 'Cargo.*'
+          commit_message: "[skip ci] | version update"
 
       - id: version_out
         run: echo "package_version=$(cargo pkgid | cut -d '@' -f2)" >> "$GITHUB_OUTPUT"
