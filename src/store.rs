@@ -5,13 +5,26 @@ use std::{
     str::FromStr,
 };
 
+use dirs;
+
 pub trait Store<'a, T, U>
 where
     T: FromStr,
 {
-    fn get_base_path() -> &'a str {
-        "/home/abhishek/.config/subscribe_hn"
+    fn get_base_path() -> String {
+        let home_dir = match dirs::home_dir() {
+            Some(path) => {
+                match path.into_os_string().into_string() {
+                    Ok(path) => path,
+                    Err(_) => panic!("Failed to resolve path!")
+                }
+            }
+            None => { panic!("Unable to find home directory!") } 
+        };
+        
+        format!("{}/.config/subscribe_hn", home_dir)
     }
+
     fn new(elem: Option<U>) -> Self;
     fn get_store() -> PathBuf;
     fn update(&mut self, elem: &T) -> ();
@@ -28,7 +41,7 @@ pub struct ProcessedId(Option<u32>);
 
 impl Store<'_, u32, u32> for ProcessedId {
     fn get_store() -> PathBuf {
-        Path::new(ProcessedId::get_base_path()).join("last_processed_id")
+        Path::new(&ProcessedId::get_base_path()).join("last_processed_id")
     }
 
     fn new(id: Option<u32>) -> Self {
@@ -70,7 +83,7 @@ pub struct Topics(Option<Vec<String>>);
 
 impl Store<'_, String, Vec<String>> for Topics {
     fn get_store() -> PathBuf {
-        Path::new(Topics::get_base_path()).join("topics")
+        Path::new(&Topics::get_base_path()).join("topics")
     }
 
     fn new(topics: Option<Vec<String>>) -> Self {
@@ -157,7 +170,7 @@ impl Store<'_, String, Vec<String>> for Topics {
 pub struct SentStories;
 impl Store<'_, String, Vec<String>> for SentStories {
     fn get_store() -> PathBuf {
-        Path::new(Topics::get_base_path()).join("sent_stories")
+        Path::new(&Topics::get_base_path()).join("sent_stories")
     }
 
     fn new(_: Option<Vec<String>>) -> Self {

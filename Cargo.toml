@@ -10,3 +10,4 @@ teloxide = { version = "0.11", features = ["macros"] }
 tokio = { version = "1.8", features = ["rt-multi-thread", "macros"] }
 reqwest = "*"
 serde = "*"
+dirs = "5.0.1"
