@@ -5,8 +5,8 @@ Documentation=https://github.com/uint4096/subscribe-HN
 [Service]
 ExecStart=/usr/bin/subscribe_hn
 User=<your_username>
-Environment=TELOXIDE_TOKEN=<your_telegram_bot_id>
-Environment=CHAT_ID=<your_telegram_chat_id>
+Environment=TELOXIDE_TOKEN=<telegram_bot_token>
+Environment=CHAT_ID=<telegram_chat_id>
 Restart=always
 
 [Install]

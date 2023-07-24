@@ -26,13 +26,13 @@ You must specify these environment variables to be able to run the built executa
 
 Once you have these details, you can run:
 ```
-TELOXIDE_TOKEN=<your-bot-id> CHAT_ID=<your-chat-id> <path-to-the-binary>
+TELOXIDE_TOKEN=<telegram_bot_token> CHAT_ID=<telegram_chat_id> <path-to-the-binary>
 ```
 
 If you have cloned the repo, you can run this command from the project's root directory:
 
 ```
-TELOXIDE_TOKEN=<your-bot-id> CHAT_ID=<your-chat-id> ./target/release/subscribe_hn
+TELOXIDE_TOKEN=<telegram_bot_token> CHAT_ID=<telegram_chat_id> ./target/release/subscribe_hn
 ```
 
 ## Supported Commands
@@ -50,6 +50,24 @@ The bot currently supports these commands:
 ## Running as a systemd Service
 
 Check the sample config file in `./config/subscribe-hn-example.service` to run the bot as a systemd service.
+
+## Running with Docker
+
+SubscribeHN comes with a pre-built Docker image. To get the bot running with Docker, run:
+
+```shell
+docker pull uint4096/subscribehn:latest
+docker run -e TELOXIDE_TOKEN=<telegram_bot_token> -e CHAT_ID=<telegram_chat_id> uint4096/subscribehn:latest
+```
+Replace the latest tag with the correct semver to run older releases.
+
+To ensure that your subscriptions are persistent, you can specify the volume while running `docker run`:
+
+```shell
+docker run -e TELOXIDE_TOKEN=<telegram_bot_token> -e CHAT_ID=<telegram_chat_id> -v /home_dir/subscribe_hn:/root/.config/subscribe_hn:rw uint4096/subscibehn:latest
+```
+You can also use docker compose to run the container. See `./config/docker-compose-example.yml` for an example docker compose config.
+
 
 ## License
 

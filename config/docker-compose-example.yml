@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+    subscribehn:
+        image: subscribehn:latest
+        volumes:
+          - ./subscribe_hn/:/root/.config/subscribe_hn/:rw
+        environment:
+          - TELOXIDE_TOKEN=<telegram_bot_token>
+          - CHAT_ID=<telegram_chat_id>
+        restart: unless-stopped
