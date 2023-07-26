@@ -2,7 +2,7 @@ version: '3'
 
 services:
     subscribehn:
-        image: subscribehn:latest
+        image: uint4096/subscribehn:latest
         volumes:
           - ./subscribe_hn/:/root/.config/subscribe_hn/:rw
         environment:

@@ -1,5 +1,8 @@
 # Subscribe HN
 
+![GitHub Actions](https://github.com/uint4096/subscribe-HN/actions/workflows/build.yml/badge.svg?label=actions)
+[![GitHub Release](https://img.shields.io/github/v/release/uint4096/subscribe-hn?include_prereleases&label=release)]()
+
 A Telegram bot that sends you Hacker News posts based on the topics you subscribe to.
 
 ## Setup
